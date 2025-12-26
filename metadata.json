@@ -1,0 +1,9 @@
+{
+  "name": "TiffinAdmin Pro",
+  "description": "A comprehensive administrative dashboard for tiffin delivery services, featuring order monitoring, user management, dispute resolution, and plan approvals.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
