@@ -57,8 +57,17 @@ const usersSlice = createSlice({
         state.loading = false;
         state.list = action.payload;
       })
+      .addCase(fetchUserById.pending, (state) => {
+        state.loading = true;
+        state.currentUser = null;
+      })
       .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.loading = false;
         state.currentUser = action.payload || null;
+      })
+      .addCase(fetchUserById.rejected, (state) => {
+        state.loading = false;
+        state.currentUser = null;
       })
       .addCase(saveUser.pending, (state) => { state.saving = true; })
       .addCase(saveUser.fulfilled, (state, action) => {

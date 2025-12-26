@@ -63,14 +63,28 @@ const ordersSlice = createSlice({
         state.loading = false;
         state.list = action.payload;
       })
+      .addCase(fetchOrderById.pending, (state) => {
+        state.loading = true;
+        state.currentOrder = null;
+      })
       .addCase(fetchOrderById.fulfilled, (state, action) => {
+        state.loading = false;
         state.currentOrder = action.payload || null;
+      })
+      .addCase(fetchOrderById.rejected, (state) => {
+        state.loading = false;
+        state.currentOrder = null;
       })
       .addCase(updateOrderState.fulfilled, (state, action) => {
         const order = state.list.find(o => o.id === action.payload.id);
         if (order) order.status = action.payload.status;
         if (state.currentOrder?.id === action.payload.id) {
           state.currentOrder.status = action.payload.status;
+          const lastIndex = state.currentOrder.timeline.findIndex(t => !t.completed);
+          if (lastIndex !== -1) {
+            state.currentOrder.timeline[lastIndex].completed = true;
+            state.currentOrder.timeline[lastIndex].time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
         }
       })
       .addCase(syncAdminNotes.fulfilled, (state, action) => {

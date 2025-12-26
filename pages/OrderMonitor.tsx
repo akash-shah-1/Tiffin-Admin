@@ -3,34 +3,80 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../hooks/useOrders';
 
+const OrderCardSkeleton = () => (
+  <div className="bg-[#1e293b] dark:bg-[#0f172a] rounded-lg border border-slate-800 shadow-xl flex flex-col overflow-hidden">
+    <div className="p-6 space-y-5 flex-1">
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <div className="h-3 w-16 bg-slate-700 rounded animate-pulse"></div>
+          <div className="h-5 w-32 bg-slate-700 rounded animate-pulse"></div>
+        </div>
+        <div className="h-6 w-20 bg-slate-700 rounded animate-pulse"></div>
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="size-5 bg-slate-700 rounded animate-pulse"></div>
+          <div className="h-4 w-40 bg-slate-700 rounded animate-pulse"></div>
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="size-5 bg-slate-700 rounded animate-pulse"></div>
+          <div className="h-4 w-full bg-slate-700 rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+        <div className="space-y-1">
+          <div className="h-2 w-12 bg-slate-700 rounded animate-pulse"></div>
+          <div className="h-4 w-16 bg-slate-700 rounded animate-pulse"></div>
+        </div>
+        <div className="space-y-1">
+          <div className="h-2 w-12 bg-slate-700 rounded animate-pulse ml-auto"></div>
+          <div className="h-5 w-20 bg-slate-700 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+    <div className="p-4 bg-black/20 dark:bg-black/40 border-t border-slate-800 flex items-center justify-between px-6">
+      <div className="h-3 w-20 bg-slate-700 rounded animate-pulse"></div>
+      <div className="h-3 w-24 bg-slate-700 rounded animate-pulse"></div>
+    </div>
+  </div>
+);
+
 const OrderMonitor: React.FC = () => {
   const navigate = useNavigate();
   const { list, allOrders, loading, activeTab, changeTab, refreshOrders } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [kitchenFilter, setKitchenFilter] = useState('All');
+  const [dateFilter, setDateFilter] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const kitchens = Array.from(new Set(allOrders.map(o => o.sellerName)));
+
+  const handlePullToRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshOrders();
+    setTimeout(() => setIsRefreshing(false), 800);
+  };
 
   const finalOrders = list.filter(o => {
     const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          o.customerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesKitchen = kitchenFilter === 'All' || o.sellerName === kitchenFilter;
-    return matchesSearch && matchesKitchen;
+    const matchesDate = !dateFilter || o.date === dateFilter;
+    return matchesSearch && matchesKitchen && matchesDate;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'Delivered': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
-      case 'Cancelled': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      case 'Out for Delivery': return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
-      case 'Preparing': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'Delayed': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-      default: return 'bg-slate-100 text-slate-500 border-slate-200';
+      case 'Delivered': return 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10';
+      case 'Cancelled': return 'text-red-500 border-red-500/30 bg-red-500/10';
+      case 'Preparing': return 'text-blue-400 border-blue-400/30 bg-blue-400/10';
+      case 'Out for Delivery': return 'text-orange-400 border-orange-400/30 bg-orange-400/10';
+      default: return 'text-slate-400 border-slate-700 bg-slate-800';
     }
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500 pb-24 md:pb-8">
+    <div className="p-4 md:p-8 space-y-6 pb-24 md:pb-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Order Logistics Monitor</h1>
@@ -38,57 +84,48 @@ const OrderMonitor: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <button 
-            onClick={refreshOrders}
-            className="h-10 px-4 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:text-primary transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-wider"
+            onClick={handlePullToRefresh}
+            className="h-10 px-4 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:text-primary transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-wider shadow-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">sync</span>
-            Refresh Queue
+            <span className={`material-symbols-outlined text-[18px] ${isRefreshing ? 'animate-spin' : ''}`}>sync</span>
+            {isRefreshing ? 'Refreshing...' : 'Pull to Refresh'}
           </button>
         </div>
       </header>
 
-      {/* Stats Bar */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Active', val: allOrders.filter(o => ['Preparing', 'Out for Delivery'].includes(o.status)).length, color: 'text-blue-500' },
-          { label: 'Cancelled', val: allOrders.filter(o => o.status === 'Cancelled').length, color: 'text-red-500' },
-          { label: 'Completed', val: allOrders.filter(o => o.status === 'Delivered').length, color: 'text-emerald-500' },
-          { label: 'Volume (₹)', val: `₹${allOrders.reduce((acc, o) => acc + o.amount, 0).toLocaleString()}`, color: 'text-slate-900 dark:text-slate-100' },
-        ].map((s) => (
-          <div key={s.label} className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-sm">
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{s.label}</p>
-            <p className={`text-xl font-black ${s.color}`}>{s.val}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* Search & Tabs */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-3">
            <div className="relative flex-1">
               <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">
                 <span className="material-symbols-outlined text-[18px]">search</span>
               </span>
               <input 
                 type="text" 
-                placeholder="Search by Order ID or Customer..." 
+                placeholder="Search ID or Customer..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-medium focus:ring-1 focus:ring-primary transition-all"
+                className="w-full h-11 pl-10 pr-4 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-medium focus:ring-1 focus:ring-primary shadow-sm"
               />
            </div>
-           <select 
-             value={kitchenFilter}
-             onChange={(e) => setKitchenFilter(e.target.value)}
-             className="h-11 px-3 pr-8 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-widest text-slate-600"
-           >
-              <option value="All">All Kitchens</option>
-              {kitchens.map(k => <option key={k} value={k}>{k}</option>)}
-           </select>
+           <div className="flex gap-2">
+             <input 
+               type="date"
+               value={dateFilter}
+               onChange={(e) => setDateFilter(e.target.value)}
+               className="h-11 px-3 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-widest text-slate-600 shadow-sm"
+             />
+             <select 
+               value={kitchenFilter}
+               onChange={(e) => setKitchenFilter(e.target.value)}
+               className="h-11 px-3 pr-8 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-widest text-slate-600 shadow-sm"
+             >
+                <option value="All">All Kitchens</option>
+                {kitchens.map(k => <option key={k} value={k}>{k}</option>)}
+             </select>
+           </div>
         </div>
 
-        <div className="flex p-1 bg-slate-100 dark:bg-slate-950/40 rounded-md border border-slate-200 dark:border-slate-800/50 overflow-x-auto no-scrollbar">
-          {/* Explicitly cast array to string[] to ensure 'tab' is not inferred as 'unknown' */}
+        <div className="flex p-1 bg-slate-100 dark:bg-slate-950/40 rounded border border-slate-200 dark:border-slate-800/50 overflow-x-auto no-scrollbar">
           {(['All', 'Active', 'Completed', 'Cancelled'] as string[]).map((tab) => (
             <button
               key={tab}
@@ -103,69 +140,66 @@ const OrderMonitor: React.FC = () => {
         </div>
       </div>
 
-      {/* Order List */}
-      {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center gap-4">
-           <div className="size-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      ) : finalOrders.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {finalOrders.map((order) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => <OrderCardSkeleton key={i} />)
+        ) : finalOrders.length > 0 ? (
+          finalOrders.map((order) => (
             <div 
               key={order.id}
               onClick={() => navigate(`/order/${order.id}`)}
-              className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-primary/40 transition-all cursor-pointer group flex flex-col"
+              className="bg-[#1e293b] dark:bg-[#0f172a] rounded-lg border border-slate-800 shadow-xl hover:border-primary/40 transition-all cursor-pointer group flex flex-col overflow-hidden"
             >
-              <div className="p-5 space-y-4 flex-1">
+              <div className="p-6 space-y-5 flex-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{order.id}</h3>
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-primary transition-colors">{order.customerName}</p>
+                    <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{order.id}</h3>
+                    <p className="text-lg font-bold text-white tracking-tight leading-none group-hover:text-primary transition-colors">{order.customerName}</p>
                   </div>
-                  <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${getStatusColor(order.status)}`}>
+                  <div className={`px-2.5 py-1 rounded text-[10px] font-black uppercase border ${getStatusStyle(order.status)}`}>
                     {order.status}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                   <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-slate-400 text-[16px]">restaurant</span>
-                      <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{order.sellerName}</p>
+                <div className="space-y-3">
+                   <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-slate-400 text-[20px]">restaurant</span>
+                      <p className="text-sm font-bold text-slate-200 truncate">{order.sellerName}</p>
                    </div>
-                   <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-slate-400 text-[16px]">shopping_basket</span>
-                      <p className="text-xs font-medium text-slate-500 truncate">{order.itemsSummary}</p>
+                   <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-slate-400 text-[20px] mt-0.5">shopping_basket</span>
+                      <p className="text-sm font-medium text-slate-400 line-clamp-2 leading-relaxed">{order.itemsSummary}</p>
                    </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-slate-800/50">
-                   <div className="text-right flex flex-col items-start">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
-                      <p className="text-xs font-bold">{order.time}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+                   <div className="flex flex-col">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Ordered At</p>
+                      <p className="text-sm font-black text-white">{order.time}</p>
                    </div>
                    <div className="text-right">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Amount</p>
-                      <p className="text-sm font-black text-primary">₹{order.amount}</p>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Amount</p>
+                      <p className="text-lg font-black text-primary">₹{order.amount}</p>
                    </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between px-5">
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{order.date}</span>
-                 <span className="text-primary text-[10px] font-black uppercase tracking-widest flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                   Manage Order
-                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              <div className="p-4 bg-black/20 dark:bg-black/40 border-t border-slate-800 flex items-center justify-between px-6">
+                 <span className="text-[11px] font-bold text-slate-500 tracking-wide">{order.date}</span>
+                 <span className="text-primary text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+                   View Details
+                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                  </span>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="py-24 text-center space-y-3 opacity-50 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-md">
-           <span className="material-symbols-outlined text-4xl text-slate-400">package_2</span>
-           <p className="font-bold text-slate-500 text-sm">No orders found matching this criteria.</p>
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="col-span-full py-24 text-center space-y-3 opacity-50 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded">
+             <span className="material-symbols-outlined text-4xl text-slate-400">package_2</span>
+             <p className="font-bold text-slate-500 text-sm">No orders found.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

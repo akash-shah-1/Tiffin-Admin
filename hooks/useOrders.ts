@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchOrders, fetchOrderById, setOrderTab, updateOrderState, syncAdminNotes, clearCurrentOrder } from '../store/slices/ordersSlice';
@@ -13,12 +13,12 @@ export const useOrders = () => {
     if (list.length === 0) dispatch(fetchOrders());
   }, [dispatch, list.length]);
 
-  const changeTab = (tab: any) => dispatch(setOrderTab(tab));
-  const getOrder = (id: string) => dispatch(fetchOrderById(id));
-  const updateStatus = (id: string, status: Order['status']) => dispatch(updateOrderState({ id, status }));
-  const saveNotes = (id: string, notes: string) => dispatch(syncAdminNotes({ id, notes }));
-  const resetOrder = () => dispatch(clearCurrentOrder());
-  const refreshOrders = () => dispatch(fetchOrders());
+  const changeTab = useCallback((tab: any) => dispatch(setOrderTab(tab)), [dispatch]);
+  const getOrder = useCallback((id: string) => dispatch(fetchOrderById(id)), [dispatch]);
+  const updateStatus = useCallback((id: string, status: Order['status']) => dispatch(updateOrderState({ id, status })), [dispatch]);
+  const saveNotes = useCallback((id: string, notes: string) => dispatch(syncAdminNotes({ id, notes })), [dispatch]);
+  const resetOrder = useCallback(() => dispatch(clearCurrentOrder()), [dispatch]);
+  const refreshOrders = useCallback(() => dispatch(fetchOrders()), [dispatch]);
 
   const filteredOrders = list.filter(o => {
     if (activeTab === 'All') return true;

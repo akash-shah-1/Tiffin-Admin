@@ -6,16 +6,17 @@ import Dashboard from './pages/Dashboard';
 import CustomerManagement from './pages/CustomerManagement';
 import CustomerDetails from './pages/CustomerDetails';
 import CustomerForm from './pages/CustomerForm';
-import PlanApprovals from './pages/PlanApprovals';
-import PlanReview from './pages/PlanReview';
-import OrderMonitor from './pages/OrderMonitor';
-import OrderDetail from './pages/OrderDetail';
-import DisputeCenter from './pages/DisputeCenter';
-import DisputeDetail from './pages/DisputeDetail';
 import KitchenManagement from './pages/KitchenManagement';
 import KitchenDetails from './pages/KitchenDetails';
 import KitchenForm from './pages/KitchenForm';
 import SystemSettings from './pages/SystemSettings';
+import PaymentsDashboard from './pages/PaymentsDashboard';
+import SettlementDetails from './pages/SettlementDetails';
+import ComplaintsCenter from './pages/ComplaintsCenter';
+import ComplaintDetail from './pages/ComplaintDetail';
+import Reports from './pages/Reports';
+import Profile from './pages/Profile';
+import MenuApprovals from './pages/MenuApprovals';
 
 const App: React.FC = () => {
   return (
@@ -32,13 +33,14 @@ const App: React.FC = () => {
           <Route path="/kitchen/:id" element={<KitchenDetails />} />
           <Route path="/kitchen/edit/:id" element={<KitchenForm />} />
           <Route path="/kitchens/add" element={<KitchenForm />} />
-          <Route path="/approvals" element={<PlanApprovals />} />
-          <Route path="/review/:id" element={<PlanReview />} />
-          <Route path="/monitor" element={<OrderMonitor />} />
-          <Route path="/order/:id" element={<OrderDetail />} />
-          <Route path="/disputes" element={<DisputeCenter />} />
-          <Route path="/dispute/:id" element={<DisputeDetail />} />
+          <Route path="/payments" element={<PaymentsDashboard />} />
+          <Route path="/settlement/:id" element={<SettlementDetails />} />
+          <Route path="/complaints" element={<ComplaintsCenter />} />
+          <Route path="/complaint/:id" element={<ComplaintDetail />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/approvals" element={<MenuApprovals />} />
           <Route path="/settings" element={<SystemSettings />} />
+          <Route path="/profile" element={<Profile />} />
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

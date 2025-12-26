@@ -3,6 +3,39 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useKitchens } from '../hooks/useKitchens';
 
+const KitchenDetailSkeleton = () => (
+  <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+      <div className="flex items-center gap-4">
+        <div className="size-9 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-4 w-64 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="h-10 w-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+    </header>
+    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1 space-y-6">
+        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="h-80 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+      <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        </div>
+        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+    </section>
+  </div>
+);
+
 const KitchenDetails: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -13,7 +46,7 @@ const KitchenDetails: React.FC = () => {
   useEffect(() => {
     if (id) getKitchen(id);
     return () => { resetSelection(); };
-  }, [id]);
+  }, [id, getKitchen, resetSelection]);
 
   useEffect(() => {
     if (currentKitchen?.adminNotes) setNotes(currentKitchen.adminNotes);
@@ -33,16 +66,11 @@ const KitchenDetails: React.FC = () => {
   };
 
   if (loading || !currentKitchen) {
-    return (
-      <div className="h-full w-full flex items-center justify-center p-20">
-        <div className="size-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <KitchenDetailSkeleton />;
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24 animate-in fade-in duration-500">
-      {/* Header */}
+    <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="size-9 rounded-md flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
@@ -73,7 +101,6 @@ const KitchenDetails: React.FC = () => {
         </div>
       </header>
 
-      {/* Profile Overview */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-md border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-4">
@@ -127,7 +154,6 @@ const KitchenDetails: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {/* Stats Bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Rating', val: currentKitchen.rating, icon: 'star', color: 'text-amber-500' },
@@ -145,7 +171,6 @@ const KitchenDetails: React.FC = () => {
             ))}
           </div>
 
-          {/* Tabs Nav */}
           <div className="flex border-b border-slate-200 dark:border-slate-800">
             {['Overview', 'Menu', 'Performance', 'Documents'].map((t) => (
               <button
@@ -160,10 +185,9 @@ const KitchenDetails: React.FC = () => {
             ))}
           </div>
 
-          {/* Tab Content */}
           <div className="min-h-[300px]">
             {activeTab === 'Overview' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest">Kitchen Gallery</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -184,12 +208,12 @@ const KitchenDetails: React.FC = () => {
                        <textarea 
                          value={notes}
                          onChange={(e) => setNotes(e.target.value)}
-                         placeholder="Add private admin notes here (e.g. hygiene inspection results, payment issues...)"
+                         placeholder="Add private admin notes here..."
                          className="w-full min-h-[120px] p-3 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md focus:ring-1 focus:ring-primary transition-all resize-none font-medium"
                        />
                        <button 
                          onClick={handleSaveNotes}
-                         className="w-full py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold uppercase tracking-widest rounded transition-all hover:bg-slate-800 dark:hover:bg-white"
+                         className="w-full py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold uppercase tracking-widest rounded transition-all hover:bg-slate-800"
                        >
                          Sync Admin Notes
                        </button>
@@ -198,7 +222,7 @@ const KitchenDetails: React.FC = () => {
               </div>
             )}
             {activeTab === 'Menu' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-bottom-2 duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentKitchen.menuItems.length > 0 ? (
                   currentKitchen.menuItems.map((item) => (
                     <div key={item.id} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex gap-4 shadow-sm group">
@@ -207,9 +231,6 @@ const KitchenDetails: React.FC = () => {
                         <h4 className="text-sm font-bold">{item.name}</h4>
                         <p className="text-primary font-black text-sm mt-1">₹{item.price}</p>
                       </div>
-                      <button className="size-8 rounded hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">more_vert</span>
-                      </button>
                     </div>
                   ))
                 ) : (
@@ -221,7 +242,7 @@ const KitchenDetails: React.FC = () => {
               </div>
             )}
             {activeTab === 'Performance' && (
-              <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-center">
                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Delivered</p>
@@ -231,14 +252,6 @@ const KitchenDetails: React.FC = () => {
                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Gross Rev.</p>
                        <p className="text-xl font-black">₹{(currentKitchen.revenue / 1000).toFixed(1)}k</p>
                     </div>
-                    <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-center">
-                       <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Platform Cut</p>
-                       <p className="text-xl font-black text-primary">₹{( (currentKitchen.revenue * (currentKitchen.commissionRate/100)) / 1000).toFixed(1)}k</p>
-                    </div>
-                 </div>
-                 <div className="py-12 text-center space-y-4 opacity-40">
-                    <span className="material-symbols-outlined text-4xl">insights</span>
-                    <p className="text-xs font-bold uppercase tracking-widest">Full Performance Reports Coming Soon</p>
                  </div>
               </div>
             )}
@@ -249,14 +262,6 @@ const KitchenDetails: React.FC = () => {
                        <span className="material-symbols-outlined text-red-500">picture_as_pdf</span>
                        <span className="text-xs font-bold uppercase tracking-widest">FSSAI_License_{currentKitchen.id}.pdf</span>
                     </div>
-                    <button className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">Download</button>
-                 </div>
-                 <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                       <span className="material-symbols-outlined text-blue-500">article</span>
-                       <span className="text-xs font-bold uppercase tracking-widest">Address_Proof_{currentKitchen.id}.png</span>
-                    </div>
-                    <button className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">Download</button>
                  </div>
               </div>
             )}

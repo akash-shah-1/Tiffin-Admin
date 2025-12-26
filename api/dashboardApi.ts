@@ -1,21 +1,18 @@
 
-import { DASHBOARD_STATS, RECENT_ACTIVITY, MOCK_REVENUE_CHART } from '../data/mockData';
+import { DASHBOARD_METRICS, QUICK_STATS, REVENUE_CHART_DATA, VOLUME_CHART_DATA, RECENT_ACTIVITY } from '../data/mockData';
 
-// Simulated API calls that return local mock data
 export const dashboardApi = {
   getStats: async () => {
     return new Promise((resolve) => {
-      setTimeout(() => resolve({ data: DASHBOARD_STATS }), 800);
-    });
-  },
-  getActivity: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ data: RECENT_ACTIVITY }), 1000);
-    });
-  },
-  getRevenueData: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ data: MOCK_REVENUE_CHART }), 600);
+      setTimeout(() => resolve({ 
+        data: {
+          metrics: DASHBOARD_METRICS,
+          quickStats: QUICK_STATS,
+          revenueData: REVENUE_CHART_DATA,
+          volumeData: VOLUME_CHART_DATA,
+          activity: RECENT_ACTIVITY
+        }
+      }), 800);
     });
   }
 };

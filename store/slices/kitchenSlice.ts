@@ -60,8 +60,17 @@ const kitchenSlice = createSlice({
         state.loading = false;
         state.list = action.payload;
       })
+      .addCase(fetchKitchenById.pending, (state) => {
+        state.loading = true;
+        state.currentKitchen = null;
+      })
       .addCase(fetchKitchenById.fulfilled, (state, action) => {
+        state.loading = false;
         state.currentKitchen = action.payload || null;
+      })
+      .addCase(fetchKitchenById.rejected, (state) => {
+        state.loading = false;
+        state.currentKitchen = null;
       })
       .addCase(updateStatus.fulfilled, (state, action) => {
         const kitchen = state.list.find(k => k.id === action.payload.id);

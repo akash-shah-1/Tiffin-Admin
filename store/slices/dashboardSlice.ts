@@ -3,17 +3,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { dashboardApi } from '../../api/dashboardApi';
 
 interface DashboardState {
-  stats: any[];
+  metrics: any | null;
+  quickStats: any | null;
+  revenueData: any[];
+  volumeData: any[];
   activity: any[];
-  revenue: any | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: DashboardState = {
-  stats: [],
+  metrics: null,
+  quickStats: null,
+  revenueData: [],
+  volumeData: [],
   activity: [],
-  revenue: null,
   loading: false,
   error: null,
 };
@@ -21,16 +25,8 @@ const initialState: DashboardState = {
 export const fetchDashboardData = createAsyncThunk(
   'dashboard/fetchAll',
   async () => {
-    const [statsRes, activityRes, revenueRes] = await Promise.all([
-      dashboardApi.getStats(),
-      dashboardApi.getActivity(),
-      dashboardApi.getRevenueData(),
-    ]);
-    return {
-      stats: (statsRes as any).data,
-      activity: (activityRes as any).data,
-      revenue: (revenueRes as any).data,
-    };
+    const response = await dashboardApi.getStats();
+    return (response as any).data;
   }
 );
 
@@ -45,9 +41,11 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardData.fulfilled, (state, action) => {
         state.loading = false;
-        state.stats = action.payload.stats;
+        state.metrics = action.payload.metrics;
+        state.quickStats = action.payload.quickStats;
+        state.revenueData = action.payload.revenueData;
+        state.volumeData = action.payload.volumeData;
         state.activity = action.payload.activity;
-        state.revenue = action.payload.revenue;
       })
       .addCase(fetchDashboardData.rejected, (state, action) => {
         state.loading = false;

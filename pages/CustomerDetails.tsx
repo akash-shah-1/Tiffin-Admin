@@ -4,6 +4,38 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUsers } from '../hooks/useUsers';
 import { MOCK_ORDERS } from '../data/mockData';
 
+const CustomerDetailSkeleton = () => (
+  <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+      <div className="flex items-center gap-4">
+        <div className="size-9 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-4 w-64 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+    </header>
+    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1 space-y-6">
+        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+      <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+        </div>
+        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+    </section>
+  </div>
+);
+
 const CustomerDetails: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -14,7 +46,7 @@ const CustomerDetails: React.FC = () => {
   useEffect(() => {
     if (id) getProfile(id);
     return () => { resetSelection(); };
-  }, [id]);
+  }, [id, getProfile, resetSelection]);
 
   useEffect(() => {
     if (currentUser?.adminNotes) setNotes(currentUser.adminNotes);
@@ -27,21 +59,15 @@ const CustomerDetails: React.FC = () => {
   };
 
   if (loading || !currentUser) {
-    return (
-      <div className="h-full w-full flex items-center justify-center p-20">
-        <div className="size-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <CustomerDetailSkeleton />;
   }
 
-  // Filter orders for this specific customer from our expanded database
   const customerOrders = MOCK_ORDERS
     .filter(o => o.customerName.toLowerCase() === currentUser.name.toLowerCase())
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24 animate-in fade-in duration-500">
-      {/* Header */}
+    <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto pb-24">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="size-9 rounded-md flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
@@ -70,16 +96,9 @@ const CustomerDetails: React.FC = () => {
             <span className="material-symbols-outlined text-[20px]">edit</span>
             Edit Identity
           </button>
-          <a 
-            href={`tel:${currentUser.phone}`}
-            className="h-10 w-10 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-primary transition-all shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[20px]">call</span>
-          </a>
         </div>
       </header>
 
-      {/* Profile Overview */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-md border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-4">
@@ -103,15 +122,11 @@ const CustomerDetails: React.FC = () => {
                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{addr}</p>
                   </div>
                 ))}
-                {(!currentUser.addresses || currentUser.addresses.length === 0) && (
-                   <p className="text-xs italic text-slate-400">No address on file</p>
-                )}
              </div>
           </div>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {/* Summary Stats */}
           <div className="grid grid-cols-3 gap-4">
             {[
               { label: 'Lifetime Orders', val: customerOrders.length, icon: 'shopping_bag', color: 'text-primary' },
@@ -128,29 +143,23 @@ const CustomerDetails: React.FC = () => {
             ))}
           </div>
 
-          {/* Tab Navigation */}
           <div className="flex border-b border-slate-200 dark:border-slate-800">
-            {[
-              { id: 'Overview', label: 'Summary' },
-              { id: 'Orders', label: `History (${customerOrders.length})` },
-              { id: 'Notes', label: 'Internal Notes' }
-            ].map((t) => (
+            {['Overview', 'Orders', 'Notes'].map((t) => (
               <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as any)}
+                key={t}
+                onClick={() => setActiveTab(t as any)}
                 className={`px-6 py-3 text-xs font-bold uppercase tracking-widest border-b-2 transition-all ${
-                  activeTab === t.id ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'
+                  activeTab === t ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
               >
-                {t.label}
+                {t}
               </button>
             ))}
           </div>
 
-          {/* Tab Content */}
           <div className="min-h-[300px]">
             {activeTab === 'Overview' && (
-              <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="space-y-6">
                  <div className="p-6 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest">Recent Activity</h3>
                     <div className="space-y-4">
@@ -158,7 +167,7 @@ const CustomerDetails: React.FC = () => {
                          customerOrders.slice(0, 4).map((order) => (
                            <div 
                              key={order.id} 
-                             onClick={() => navigate('/monitor')}
+                             onClick={() => navigate('/orders')}
                              className="flex items-center justify-between p-3 rounded bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/50 hover:border-primary/50 cursor-pointer transition-all group"
                            >
                               <div className="flex items-center gap-3">
@@ -167,15 +176,11 @@ const CustomerDetails: React.FC = () => {
                                  </div>
                                  <div>
                                     <p className="text-xs font-bold leading-none">{order.sellerName}</p>
-                                    {/* Changed order.items to order.itemsSummary as 'items' does not exist on type 'Order' */}
                                     <p className="text-[10px] text-slate-400 mt-1">{order.date} • {order.itemsSummary}</p>
                                  </div>
                               </div>
                               <div className="text-right">
                                 <p className="text-xs font-black">₹{order.amount}</p>
-                                <p className={`text-[8px] font-bold uppercase tracking-tighter ${
-                                  order.status === 'Delivered' ? 'text-emerald-500' : 'text-amber-500'
-                                }`}>{order.status}</p>
                               </div>
                            </div>
                          ))
@@ -183,18 +188,11 @@ const CustomerDetails: React.FC = () => {
                          <p className="text-center py-10 text-xs text-slate-400 font-bold uppercase tracking-widest">No recent transactions</p>
                        )}
                     </div>
-                    <button 
-                      onClick={() => setActiveTab('Orders')}
-                      className="w-full py-2.5 text-xs font-bold text-primary uppercase tracking-widest hover:bg-primary/5 rounded transition-all"
-                    >
-                      View All Order History
-                    </button>
                  </div>
               </div>
             )}
-
             {activeTab === 'Orders' && (
-              <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 overflow-hidden animate-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 overflow-hidden">
                  <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs min-w-[600px]">
                         <thead className="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800">
@@ -208,19 +206,13 @@ const CustomerDetails: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                         {customerOrders.map((order) => (
-                            <tr 
-                            key={order.id} 
-                            onClick={() => navigate('/monitor')}
-                            className="hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors cursor-pointer group"
-                            >
+                            <tr key={order.id} onClick={() => navigate('/orders')} className="hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors cursor-pointer group">
                                 <td className="px-4 py-3 font-bold text-slate-700 dark:text-slate-300">{order.id}</td>
                                 <td className="px-4 py-3 text-slate-500 font-medium">{order.date}</td>
                                 <td className="px-4 py-3 font-bold group-hover:text-primary transition-colors">{order.sellerName}</td>
                                 <td className="px-4 py-3">
                                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${
-                                    order.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 
-                                    order.status === 'Cancelled' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
-                                    'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                    order.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                                 }`}>
                                     {order.status}
                                 </span>
@@ -231,34 +223,20 @@ const CustomerDetails: React.FC = () => {
                         </tbody>
                     </table>
                  </div>
-                 {customerOrders.length === 0 && (
-                    <div className="py-20 text-center opacity-40">
-                       <span className="material-symbols-outlined text-4xl mb-2">history</span>
-                       <p className="text-xs font-bold uppercase tracking-widest">Empty Transaction History</p>
-                    </div>
-                 )}
               </div>
             )}
-
             {activeTab === 'Notes' && (
-              <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-4">
                  <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                       <span className="material-symbols-outlined text-primary text-[20px]">sticky_note_2</span>
-                       <h3 className="text-sm font-bold uppercase tracking-widest">Internal CRM Logs</h3>
-                    </div>
                     <textarea 
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Enter internal admin notes about this customer..."
-                      className="w-full min-h-[160px] p-4 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md focus:ring-1 focus:ring-primary transition-all resize-none font-medium leading-relaxed"
+                      placeholder="Internal CRM logs..."
+                      className="w-full min-h-[160px] p-4 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md focus:ring-1 focus:ring-primary transition-all resize-none font-medium"
                     />
                     <div className="flex justify-end">
-                       <button 
-                         onClick={handleSaveNotes}
-                         className="px-8 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-widest rounded transition-all hover:bg-slate-800 dark:hover:bg-white shadow-sm"
-                       >
-                         Sync Customer Notes
+                       <button onClick={handleSaveNotes} className="px-8 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-widest rounded shadow-sm">
+                         Sync Notes
                        </button>
                     </div>
                  </div>

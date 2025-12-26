@@ -38,20 +38,6 @@ export interface Kitchen {
   menuItems: { id: string; name: string; price: number; image: string }[];
 }
 
-export interface TiffinPlan {
-  id: string;
-  name: string;
-  sellerName: string;
-  sellerId: string;
-  sellerRating: number;
-  price: number;
-  tags: string[];
-  description: string;
-  image: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  submittedAt: string;
-}
-
 export interface OrderItem {
   name: string;
   quantity: number;
@@ -73,7 +59,7 @@ export interface Order {
   sellerName: string;
   sellerId: string;
   sellerPhone: string;
-  status: 'Preparing' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Delayed' | 'Placed' | 'Accepted';
+  status: 'Placed' | 'Accepted' | 'Preparing' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
   itemsList: OrderItem[];
   itemsSummary: string;
   time: string;
@@ -84,16 +70,85 @@ export interface Order {
   paymentStatus: 'Paid' | 'Pending';
   timeline: OrderTimeline[];
   adminNotes?: string;
+  cancelReason?: string;
 }
 
-export interface Dispute {
+export interface Settlement {
   id: string;
-  orderId: string;
-  title: string;
+  kitchenId: string;
+  kitchenName: string;
+  bankDetails: {
+    bankName: string;
+    accountNo: string;
+    ifsc: string;
+    accountHolder: string;
+  };
+  totalOrders: number;
+  totalAmount: number;
+  commissionRate: number;
+  commissionAmount: number;
+  payoutAmount: number;
+  dateRange: string;
+  status: 'Pending' | 'Completed';
+  processedAt?: string;
+  transactionRef?: string;
+  orders: {
+    id: string;
+    amount: number;
+    date: string;
+    commission: number;
+  }[];
+}
+
+export interface ComplaintMessage {
+  id: string;
+  sender: 'Customer' | 'Admin' | 'Kitchen';
+  text: string;
+  time: string;
+  isInternal?: boolean;
+}
+
+export type ComplaintCategory = 'Order issue' | 'Payment issue' | 'Food quality' | 'Delivery problem' | 'App issue' | 'Other';
+
+export interface Complaint {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  orderId?: string;
+  subject: string;
   description: string;
-  priority: 'Critical' | 'Medium' | 'Low';
-  status: 'Active' | 'Pending' | 'Resolved';
-  elapsedTime: string;
-  userAvatar: string;
-  sellerAvatar: string;
+  category: ComplaintCategory;
+  priority: 'High' | 'Medium' | 'Low';
+  status: 'Open' | 'In Progress' | 'Resolved';
+  createdAt: string;
+  messages: ComplaintMessage[];
+}
+
+export interface ReportStats {
+  totalOrders: number;
+  totalRevenue: number;
+  totalCommission: number;
+  avgOrderValue: number;
+  avgRating?: number;
+  topKitchens?: { name: string; orders: number; revenue: number }[];
+  breakdown?: { name: string; orders: number; revenue: number; commission: number }[];
+  chartData?: { label: string; value: number }[];
+}
+
+export type MenuCategory = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks';
+export type DietaryTag = 'Veg' | 'Non-Veg' | 'Vegan' | 'Jain';
+
+export interface MenuItemApproval {
+  id: string;
+  itemName: string;
+  kitchenId: string;
+  kitchenName: string;
+  category: MenuCategory;
+  price: number;
+  tags: DietaryTag[];
+  image: string;
+  submittedAt: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  description?: string;
 }

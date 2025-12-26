@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchUsers, fetchUserById, setSegment, toggleStatus, saveUser, clearCurrentUser } from '../store/slices/usersSlice';
@@ -13,20 +13,20 @@ export const useUsers = () => {
     if (list.length === 0) dispatch(fetchUsers(currentType));
   }, [dispatch, currentType, list.length]);
 
-  const changeSegment = (type: 'Customer' | 'Seller') => {
+  const changeSegment = useCallback((type: 'Customer' | 'Seller') => {
     dispatch(setSegment(type));
-  };
+  }, [dispatch]);
 
-  const getProfile = (id: string) => dispatch(fetchUserById(id));
+  const getProfile = useCallback((id: string) => dispatch(fetchUserById(id)), [dispatch]);
   
-  const updateProfile = (user: Partial<User>) => dispatch(saveUser(user));
+  const updateProfile = useCallback((user: Partial<User>) => dispatch(saveUser(user)), [dispatch]);
 
-  const handleToggleStatus = (id: string, currentStatus: User['status']) => {
+  const handleToggleStatus = useCallback((id: string, currentStatus: User['status']) => {
     const newStatus = currentStatus === 'Active' ? 'Deactivated' : 'Active';
     dispatch(toggleStatus({ id, status: newStatus }));
-  };
+  }, [dispatch]);
 
-  const resetSelection = () => dispatch(clearCurrentUser());
+  const resetSelection = useCallback(() => dispatch(clearCurrentUser()), [dispatch]);
 
   return { 
     list, 

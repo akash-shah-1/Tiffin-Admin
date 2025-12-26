@@ -1,24 +1,24 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchDashboardData } from '../store/slices/dashboardSlice';
 
 export const useDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { stats, activity, revenue, loading, error } = useSelector(
+  const { metrics, quickStats, revenueData, volumeData, activity, loading, error } = useSelector(
     (state: RootState) => state.dashboard
   );
 
   useEffect(() => {
-    if (stats.length === 0) {
+    if (!metrics) {
       dispatch(fetchDashboardData());
     }
-  }, [dispatch, stats.length]);
+  }, [dispatch, metrics]);
 
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     dispatch(fetchDashboardData());
-  };
+  }, [dispatch]);
 
-  return { stats, activity, revenue, loading, error, refreshData };
+  return { metrics, quickStats, revenueData, volumeData, activity, loading, error, refreshData };
 };

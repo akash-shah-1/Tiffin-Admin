@@ -3,6 +3,35 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../hooks/useUsers';
 
+const CustomerCardSkeleton = () => (
+  <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+    <div className="p-5 space-y-4 flex-1">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <div className="size-12 rounded bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+            <div className="h-2 w-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+          </div>
+        </div>
+        <div className="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded animate-pulse"></div>
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded animate-pulse"></div>
+      </div>
+      <div className="flex justify-between items-center pt-2">
+        <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+        <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+      </div>
+    </div>
+    <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800/60 flex gap-2">
+      <div className="flex-1 h-9 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+      <div className="flex-1 h-9 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div>
+    </div>
+  </div>
+);
+
 const CustomerManagement: React.FC = () => {
   const navigate = useNavigate();
   const { list, loading, changeSegment } = useUsers();
@@ -12,7 +41,7 @@ const CustomerManagement: React.FC = () => {
 
   useEffect(() => {
     changeSegment('Customer');
-  }, []);
+  }, [changeSegment]);
 
   const filteredCustomers = list
     .filter(u => {
@@ -28,7 +57,7 @@ const CustomerManagement: React.FC = () => {
     });
 
   return (
-    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500 pb-24 md:pb-8">
+    <div className="p-4 md:p-8 space-y-6 pb-24 md:pb-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Customer Directory</h1>
@@ -43,7 +72,6 @@ const CustomerManagement: React.FC = () => {
         </button>
       </header>
 
-      {/* Control Row */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">
@@ -81,14 +109,11 @@ const CustomerManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Customer Grid */}
-      {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center gap-4">
-           <div className="size-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      ) : filteredCustomers.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCustomers.map((customer) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => <CustomerCardSkeleton key={i} />)
+        ) : filteredCustomers.length > 0 ? (
+          filteredCustomers.map((customer) => (
             <div 
               key={customer.id}
               onClick={() => navigate(`/customer/${customer.id}`)}
@@ -131,7 +156,6 @@ const CustomerManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Footer */}
               <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800/60 flex gap-2">
                 <a 
                   href={`tel:${customer.phone}`}
@@ -150,14 +174,14 @@ const CustomerManagement: React.FC = () => {
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="py-24 text-center space-y-3 opacity-50 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-md">
-           <span className="material-symbols-outlined text-4xl text-slate-400">group_off</span>
-           <p className="font-bold text-slate-500 text-sm">No customers found.</p>
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="col-span-full py-24 text-center space-y-3 opacity-50 bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-md">
+             <span className="material-symbols-outlined text-4xl text-slate-400">group_off</span>
+             <p className="font-bold text-slate-500 text-sm">No customers found.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
