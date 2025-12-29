@@ -87,9 +87,11 @@ export interface Settlement {
   totalAmount: number;
   commissionRate: number;
   commissionAmount: number;
+  adjustmentAmount: number; // For penalties/refunds
+  adjustmentReason?: string;
   payoutAmount: number;
   dateRange: string;
-  status: 'Pending' | 'Completed';
+  status: 'Pending' | 'On Hold' | 'Completed';
   processedAt?: string;
   transactionRef?: string;
   orders: {
@@ -136,19 +138,90 @@ export interface ReportStats {
   chartData?: { label: string; value: number }[];
 }
 
-export type MenuCategory = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snacks';
-export type DietaryTag = 'Veg' | 'Non-Veg' | 'Vegan' | 'Jain';
+export interface KitchenApprovalRequest {
+  id: string;
+  kitchenName: string;
+  ownerName: string;
+  phone: string;
+  email: string;
+  fssaiNumber: string;
+  fssaiDoc: string;
+  address: string;
+  identityDoc: string;
+  kitchenPhotos: string[];
+  submittedAt: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Changes Requested';
+  adminNotes?: string;
+  feedback?: {
+    reasons: string[];
+    comments: string;
+  };
+}
 
+// FIX: Added missing DeliveryStatus and VehicleType exported members
+export type DeliveryStatus = 'Online' | 'Offline' | 'Busy' | 'Suspended' | 'Pending Verification';
+export type VehicleType = 'Bike' | 'Scooter' | 'Cycle';
+
+// FIX: Added missing DeliveryPartner interface
+export interface DeliveryPartner {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  avatar: string;
+  status: DeliveryStatus;
+  vehicleType: VehicleType;
+  vehicleNumber: string;
+  rating: number;
+  totalDeliveries: number;
+  todayDeliveries: number;
+  joinedAt: string;
+  zones: string[];
+  serviceRadius: number;
+  commission: {
+    type: 'Flat' | 'Percentage';
+    value: number;
+  };
+  documents: {
+    aadhaar: { status: string; number: string };
+    license: { status: string; number: string; expiry: string };
+    rc: { status: string; number: string };
+    bank: { status: string; holder: string; bankName: string; accountNo: string; ifsc: string };
+  };
+  dob?: string;
+  address?: string;
+}
+
+// FIX: Added missing MenuItemApproval interface
 export interface MenuItemApproval {
   id: string;
   itemName: string;
   kitchenId: string;
   kitchenName: string;
-  category: MenuCategory;
+  category: string;
   price: number;
-  tags: DietaryTag[];
+  tags: string[];
   image: string;
+  gallery: string[];
   submittedAt: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  description?: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Changes Requested';
+  description: string;
+  cuisine: string;
+  prepTime: string;
+  spiceLevel: string;
+  allergens: string[];
+  ingredients: string[];
+  availability: string[];
+  stock?: number;
+  qualityCheck: {
+    imageQuality: boolean;
+    descriptionComplete: boolean;
+    priceReasonable: boolean;
+    detailsFilled: boolean;
+  };
+  adminNotes?: string;
+  feedback?: {
+    reasons: string[];
+    comments: string;
+  };
 }

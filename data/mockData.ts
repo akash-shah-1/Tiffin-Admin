@@ -135,6 +135,8 @@ export const MOCK_SETTLEMENTS: Settlement[] = [
     totalAmount: 24500,
     commissionRate: 15,
     commissionAmount: 3675,
+    // FIX: Added missing adjustmentAmount property
+    adjustmentAmount: 0,
     payoutAmount: 20825,
     dateRange: 'May 14 - May 20, 2024',
     status: 'Pending',

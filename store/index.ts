@@ -7,7 +7,8 @@ import kitchenReducer from './slices/kitchenSlice';
 import paymentsReducer from './slices/paymentsSlice';
 import complaintsReducer from './slices/complaintsSlice';
 import reportsReducer from './slices/reportsSlice';
-import menuApprovalsReducer from './slices/menuApprovalsSlice';
+import kitchenApprovalsReducer from './slices/kitchenApprovalsSlice';
+import ordersReducer from './slices/ordersSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,7 +19,8 @@ export const store = configureStore({
     payments: paymentsReducer,
     complaints: complaintsReducer,
     reports: reportsReducer,
-    menuApprovals: menuApprovalsReducer,
+    kitchenApprovals: kitchenApprovalsReducer,
+    orders: ordersReducer,
   },
 });
 

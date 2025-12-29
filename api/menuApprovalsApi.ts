@@ -1,7 +1,7 @@
 
 import { MenuItemApproval } from '../types';
 
-const STORAGE_KEY = 'tiffin_menu_approvals';
+const STORAGE_KEY = 'tiffin_menu_approvals_v2';
 
 const MOCK_MENU_APPROVALS: MenuItemApproval[] = [
   {
@@ -11,11 +11,28 @@ const MOCK_MENU_APPROVALS: MenuItemApproval[] = [
     kitchenName: "Mom's Kitchen",
     category: 'Lunch',
     price: 180,
-    tags: ['Veg'],
-    image: 'https://picsum.photos/400/300?random=201',
+    tags: ['Veg', 'Jain'],
+    image: 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&q=80&w=400',
+    gallery: [
+      'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1601050638911-c323960ff861?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&q=80&w=800'
+    ],
     submittedAt: '2024-05-25 10:15 AM',
     status: 'Pending',
-    description: 'Traditional Punjabi saag prepared with mustard leaves and hand-churned butter.'
+    description: 'Traditional Punjabi saag prepared with mustard leaves and hand-churned butter. Slow cooked for 4 hours to achieve the perfect consistency.',
+    cuisine: 'North Indian',
+    prepTime: '25 mins',
+    spiceLevel: 'Medium',
+    allergens: ['Dairy'],
+    ingredients: ['Mustard Leaves', 'Spinach', 'Corn Meal', 'Ghee', 'Ginger', 'Green Chilies', 'Hand-churned Butter'],
+    availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    qualityCheck: {
+      imageQuality: true,
+      descriptionComplete: true,
+      priceReasonable: true,
+      detailsFilled: true
+    }
   },
   {
     id: 'ITEM-102',
@@ -24,11 +41,27 @@ const MOCK_MENU_APPROVALS: MenuItemApproval[] = [
     kitchenName: "Tiffin Kings",
     category: 'Breakfast',
     price: 120,
-    tags: ['Veg', 'Vegan'],
-    image: 'https://picsum.photos/400/300?random=202',
+    tags: ['Veg', 'Vegan', 'Gluten-Free'],
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=400',
+    gallery: [
+      'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1626074284572-975990264024?auto=format&fit=crop&q=80&w=800'
+    ],
     submittedAt: '2024-05-25 09:30 AM',
     status: 'Pending',
-    description: 'Healthy oats idli served with coconut chutney and tomato sambar.'
+    description: 'Healthy oats idli served with coconut chutney and tomato sambar. High protein and fiber content, perfect for a light start.',
+    cuisine: 'South Indian',
+    prepTime: '15 mins',
+    spiceLevel: 'Mild',
+    allergens: [],
+    ingredients: ['Oats', 'Semolina', 'Curd', 'Carrots', 'Curry Leaves', 'Mustard Seeds'],
+    availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    qualityCheck: {
+      imageQuality: true,
+      descriptionComplete: false,
+      priceReasonable: true,
+      detailsFilled: true
+    }
   },
   {
     id: 'ITEM-103',
@@ -38,23 +71,27 @@ const MOCK_MENU_APPROVALS: MenuItemApproval[] = [
     category: 'Dinner',
     price: 240,
     tags: ['Non-Veg'],
-    image: 'https://picsum.photos/400/300?random=203',
+    image: 'https://images.unsplash.com/photo-1603894584115-f73f2ec851ad?auto=format&fit=crop&q=80&w=400',
+    gallery: [
+      'https://images.unsplash.com/photo-1603894584115-f73f2ec851ad?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&q=80&w=800'
+    ],
     submittedAt: '2024-05-24 08:45 PM',
     status: 'Pending',
-    description: 'Creamy butter chicken served with 2 lachha parathas and jeera rice.'
-  },
-  {
-    id: 'ITEM-104',
-    itemName: 'Jain Paneer Lababdar',
-    kitchenId: 'K-001',
-    kitchenName: "Mom's Kitchen",
-    category: 'Lunch',
-    price: 210,
-    tags: ['Veg', 'Jain'],
-    image: 'https://picsum.photos/400/300?random=204',
-    submittedAt: '2024-05-24 11:30 AM',
-    status: 'Pending',
-    description: 'No onion, no garlic paneer dish specially curated for Jain preferences.'
+    description: 'Creamy butter chicken served with 2 lachha parathas, jeera rice, and cucumber raita.',
+    cuisine: 'North Indian',
+    prepTime: '30 mins',
+    spiceLevel: 'Spicy',
+    allergens: ['Dairy', 'Nuts'],
+    ingredients: ['Chicken', 'Tomato Gravy', 'Cream', 'Cashews', 'Butter', 'Whole Spices'],
+    availability: ['Fri', 'Sat', 'Sun'],
+    stock: 20,
+    qualityCheck: {
+      imageQuality: true,
+      descriptionComplete: true,
+      priceReasonable: true,
+      detailsFilled: true
+    }
   }
 ];
 
@@ -73,14 +110,32 @@ export const menuApprovalsApi = {
       setTimeout(() => resolve({ data: getStoredApprovals() }), 800);
     });
   },
-  updateStatus: async (id: string, status: 'Approved' | 'Rejected'): Promise<{ success: true }> => {
+  getApprovalById: async (id: string): Promise<{ data: MenuItemApproval | undefined }> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const item = getStoredApprovals().find(i => i.id === id);
+        resolve({ data: item });
+      }, 500);
+    });
+  },
+  updateStatus: async (id: string, status: MenuItemApproval['status'], feedback?: any): Promise<{ success: true }> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const items = getStoredApprovals();
-        const updated = items.map(item => item.id === id ? { ...item, status } : item);
+        const updated = items.map(item => item.id === id ? { ...item, status, feedback } : item);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         resolve({ success: true });
       }, 500);
+    });
+  },
+  saveAdminNotes: async (id: string, adminNotes: string): Promise<{ success: true }> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const items = getStoredApprovals();
+        const updated = items.map(item => item.id === id ? { ...item, adminNotes } : item);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        resolve({ success: true });
+      }, 300);
     });
   }
 };

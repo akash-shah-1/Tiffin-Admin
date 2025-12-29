@@ -58,13 +58,18 @@ const KitchenManagement: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Kitchen Network</h1>
           <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Operational Control & Compliance</p>
         </div>
-        <button 
-          onClick={() => navigate('/kitchens/add')}
-          className="h-10 px-6 rounded-md bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-widest shadow-sm flex items-center gap-2 transition-all"
-        >
-          <span className="material-symbols-outlined text-[18px]">add_business</span>
-          Onboard Kitchen
-        </button>
+        
+        {/* Onboarding restricted to Seller App */}
+        <div className="flex flex-col items-end">
+          <button 
+            disabled
+            className="h-10 px-6 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_business</span>
+            Add Kitchen
+          </button>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">Registration via Kitchen App Only</span>
+        </div>
       </header>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -91,15 +96,6 @@ const KitchenManagement: React.FC = () => {
             <option value="Active">Active ({counts.active})</option>
             <option value="Pending">Pending ({counts.pending})</option>
             <option value="Inactive">Inactive ({counts.inactive})</option>
-          </select>
-
-          <select 
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="h-10 px-3 pr-8 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 focus:ring-primary"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="date">Sort by Recent</option>
           </select>
         </div>
       </div>
@@ -151,7 +147,7 @@ const KitchenManagement: React.FC = () => {
                     <span className="material-symbols-outlined text-[14px]">phone</span>
                     {kitchen.phone}
                   </div>
-                  <span className="text-primary hover:underline">View Details</span>
+                  <span className="text-primary hover:underline">View Profile</span>
                 </div>
               </div>
 
@@ -164,23 +160,13 @@ const KitchenManagement: React.FC = () => {
                   <span className="material-symbols-outlined text-[16px] mr-1.5">call</span>
                   Call
                 </a>
-                {kitchen.status === 'Pending' ? (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setStatus(kitchen.id, 'Active'); }}
-                    className="flex-1 h-9 rounded bg-primary text-white text-[10px] font-bold uppercase tracking-widest hover:bg-primary-hover transition-all shadow-sm flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[16px] mr-1.5">check_circle</span>
-                    Approve
-                  </button>
-                ) : (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); navigate(`/kitchen/${kitchen.id}`); }}
-                    className="flex-1 h-9 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest hover:border-primary/50 transition-all shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-[16px] mr-1.5">visibility</span>
-                    View
-                  </button>
-                )}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); navigate(`/kitchen/${kitchen.id}`); }}
+                  className="flex-1 h-9 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest hover:border-primary/50 transition-all shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[16px] mr-1.5">visibility</span>
+                  Details
+                </button>
               </div>
             </div>
           ))

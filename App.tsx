@@ -16,7 +16,8 @@ import ComplaintsCenter from './pages/ComplaintsCenter';
 import ComplaintDetail from './pages/ComplaintDetail';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
-import MenuApprovals from './pages/MenuApprovals';
+import KitchenApprovals from './pages/KitchenApprovals';
+import KitchenApprovalDetail from './pages/KitchenApprovalDetail';
 
 const App: React.FC = () => {
   return (
@@ -32,16 +33,16 @@ const App: React.FC = () => {
           <Route path="/kitchens" element={<KitchenManagement />} />
           <Route path="/kitchen/:id" element={<KitchenDetails />} />
           <Route path="/kitchen/edit/:id" element={<KitchenForm />} />
-          <Route path="/kitchens/add" element={<KitchenForm />} />
+          {/* Note: Kitchen onboarding route removed, handled via external app */}
           <Route path="/payments" element={<PaymentsDashboard />} />
           <Route path="/settlement/:id" element={<SettlementDetails />} />
           <Route path="/complaints" element={<ComplaintsCenter />} />
           <Route path="/complaint/:id" element={<ComplaintDetail />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/approvals" element={<MenuApprovals />} />
+          <Route path="/approvals" element={<KitchenApprovals />} />
+          <Route path="/approvals/:id" element={<KitchenApprovalDetail />} />
           <Route path="/settings" element={<SystemSettings />} />
           <Route path="/profile" element={<Profile />} />
-          {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Layout>
