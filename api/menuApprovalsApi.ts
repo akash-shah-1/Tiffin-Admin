@@ -1,141 +1,132 @@
-
+import { graphqlClient } from './graphqlClient';
 import { MenuItemApproval } from '../types';
-
-const STORAGE_KEY = 'tiffin_menu_approvals_v2';
-
-const MOCK_MENU_APPROVALS: MenuItemApproval[] = [
-  {
-    id: 'ITEM-101',
-    itemName: 'Authentic Sarson ka Saag',
-    kitchenId: 'K-001',
-    kitchenName: "Mom's Kitchen",
-    category: 'Lunch',
-    price: 180,
-    tags: ['Veg', 'Jain'],
-    image: 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&q=80&w=400',
-    gallery: [
-      'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1601050638911-c323960ff861?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&q=80&w=800'
-    ],
-    submittedAt: '2024-05-25 10:15 AM',
-    status: 'Pending',
-    description: 'Traditional Punjabi saag prepared with mustard leaves and hand-churned butter. Slow cooked for 4 hours to achieve the perfect consistency.',
-    cuisine: 'North Indian',
-    prepTime: '25 mins',
-    spiceLevel: 'Medium',
-    allergens: ['Dairy'],
-    ingredients: ['Mustard Leaves', 'Spinach', 'Corn Meal', 'Ghee', 'Ginger', 'Green Chilies', 'Hand-churned Butter'],
-    availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    qualityCheck: {
-      imageQuality: true,
-      descriptionComplete: true,
-      priceReasonable: true,
-      detailsFilled: true
-    }
-  },
-  {
-    id: 'ITEM-102',
-    itemName: 'Oats Idli Platter',
-    kitchenId: 'K-002',
-    kitchenName: "Tiffin Kings",
-    category: 'Breakfast',
-    price: 120,
-    tags: ['Veg', 'Vegan', 'Gluten-Free'],
-    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=400',
-    gallery: [
-      'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1626074284572-975990264024?auto=format&fit=crop&q=80&w=800'
-    ],
-    submittedAt: '2024-05-25 09:30 AM',
-    status: 'Pending',
-    description: 'Healthy oats idli served with coconut chutney and tomato sambar. High protein and fiber content, perfect for a light start.',
-    cuisine: 'South Indian',
-    prepTime: '15 mins',
-    spiceLevel: 'Mild',
-    allergens: [],
-    ingredients: ['Oats', 'Semolina', 'Curd', 'Carrots', 'Curry Leaves', 'Mustard Seeds'],
-    availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    qualityCheck: {
-      imageQuality: true,
-      descriptionComplete: false,
-      priceReasonable: true,
-      detailsFilled: true
-    }
-  },
-  {
-    id: 'ITEM-103',
-    itemName: 'Butter Chicken Thali',
-    kitchenId: 'K-003',
-    kitchenName: "Spice Route",
-    category: 'Dinner',
-    price: 240,
-    tags: ['Non-Veg'],
-    image: 'https://images.unsplash.com/photo-1603894584115-f73f2ec851ad?auto=format&fit=crop&q=80&w=400',
-    gallery: [
-      'https://images.unsplash.com/photo-1603894584115-f73f2ec851ad?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&q=80&w=800'
-    ],
-    submittedAt: '2024-05-24 08:45 PM',
-    status: 'Pending',
-    description: 'Creamy butter chicken served with 2 lachha parathas, jeera rice, and cucumber raita.',
-    cuisine: 'North Indian',
-    prepTime: '30 mins',
-    spiceLevel: 'Spicy',
-    allergens: ['Dairy', 'Nuts'],
-    ingredients: ['Chicken', 'Tomato Gravy', 'Cream', 'Cashews', 'Butter', 'Whole Spices'],
-    availability: ['Fri', 'Sat', 'Sun'],
-    stock: 20,
-    qualityCheck: {
-      imageQuality: true,
-      descriptionComplete: true,
-      priceReasonable: true,
-      detailsFilled: true
-    }
-  }
-];
-
-const getStoredApprovals = (): MenuItemApproval[] => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_MENU_APPROVALS));
-    return MOCK_MENU_APPROVALS;
-  }
-  return JSON.parse(stored);
-};
 
 export const menuApprovalsApi = {
   getApprovals: async (): Promise<{ data: MenuItemApproval[] }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ data: getStoredApprovals() }), 800);
-    });
+    const query = `
+      query GetPendingMenuItems {
+        menuItems(status: PENDING) {
+          _id
+          itemName
+          kitchenId
+          kitchenName
+          category
+          price
+          tags
+          image
+          gallery
+          description
+          createdAt
+          status
+        }
+      }
+    `;
+    const data = await graphqlClient(query);
+    const mapped = data.menuItems.map((item: any) => ({
+      id: item._id,
+      itemName: item.itemName,
+      kitchenId: item.kitchenId,
+      kitchenName: item.kitchenName,
+      category: item.category,
+      price: item.price,
+      tags: item.tags,
+      image: item.image,
+      gallery: item.gallery,
+      description: item.description,
+      submittedAt: new Date(item.createdAt).toLocaleString(),
+      status: item.status.charAt(0) + item.status.slice(1).toLowerCase().replace('_', ' ')
+    }));
+    return { data: mapped };
   },
+
   getApprovalById: async (id: string): Promise<{ data: MenuItemApproval | undefined }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const item = getStoredApprovals().find(i => i.id === id);
-        resolve({ data: item });
-      }, 500);
-    });
+    const query = `
+      query GetMenuItem($id: ID!) {
+        menuItem(id: $id) {
+          _id
+          itemName
+          kitchenId
+          kitchenName
+          category
+          price
+          tags
+          image
+          gallery
+          description
+          createdAt
+          status
+          adminNotes
+        }
+      }
+    `;
+    const data = await graphqlClient(query, { id });
+    if (!data.menuItem) return { data: undefined };
+
+    const item = data.menuItem;
+    const mapped: MenuItemApproval = {
+      id: item._id,
+      itemName: item.itemName,
+      kitchenId: item.kitchenId,
+      kitchenName: item.kitchenName,
+      category: item.category,
+      price: item.price,
+      tags: item.tags,
+      image: item.image,
+      gallery: item.gallery,
+      description: item.description,
+      submittedAt: new Date(item.createdAt).toLocaleString(),
+      status: item.status.charAt(0) + item.status.slice(1).toLowerCase().replace('_', ' '),
+      adminNotes: item.adminNotes
+    };
+    return { data: mapped };
   },
-  updateStatus: async (id: string, status: MenuItemApproval['status'], feedback?: any): Promise<{ success: true }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const items = getStoredApprovals();
-        const updated = items.map(item => item.id === id ? { ...item, status, feedback } : item);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        resolve({ success: true });
-      }, 500);
-    });
+
+  updateStatus: async (id: string, status: string, feedback?: any): Promise<{ success: true }> => {
+    let mutation = '';
+    let variables: any = { id };
+
+    if (status === 'Approved') {
+      mutation = `
+        mutation ApproveMenuItem($id: ID!) {
+          approveMenuItem(id: $id) { _id status }
+        }
+      `;
+    } else if (status === 'Rejected') {
+      mutation = `
+        mutation RejectMenuItem($id: ID!, $reason: String!) {
+          rejectMenuItem(id: $id, reason: $reason) { _id status }
+        }
+      `;
+      variables.reason = feedback?.comments || 'Does not meet standards';
+    } else if (status === 'Changes Requested') {
+      mutation = `
+        mutation RequestMenuItemChanges($id: ID!, $feedback: MenuItemFeedbackInput!) {
+          requestMenuItemChanges(id: $id, feedback: $feedback) { _id status }
+        }
+      `;
+      variables.feedback = {
+        reasons: feedback?.reasons || ['Incomplete details'],
+        comments: feedback?.comments || 'Please revise'
+      };
+    }
+
+    if (mutation) {
+      await graphqlClient(mutation, variables);
+    }
+
+    return { success: true };
   },
+
   saveAdminNotes: async (id: string, adminNotes: string): Promise<{ success: true }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const items = getStoredApprovals();
-        const updated = items.map(item => item.id === id ? { ...item, adminNotes } : item);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        resolve({ success: true });
-      }, 300);
-    });
+    const mutation = `
+      mutation UpdateMenuItemNotes($id: ID!, $notes: String!) {
+        updateMenuItem(updateMenuItemInput: { id: $id, adminNotes: $notes }) {
+          _id
+          adminNotes
+        }
+      }
+    `;
+    await graphqlClient(mutation, { id, notes: adminNotes });
+    return { success: true };
   }
 };

@@ -4,7 +4,11 @@ import React from 'react';
 interface MetricCardProps {
   label: string;
   value: string | number | undefined;
-  trend?: string;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+    label: string;
+  };
   icon: string;
   iconColor?: string;
   loading?: boolean;
@@ -24,7 +28,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({ label, value, trend, ico
     <div className="bg-white dark:bg-[#111827] p-4 md:p-6 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between aspect-square md:aspect-auto md:min-h-[140px] transition-all hover:border-primary/30 group">
       <div className="flex items-center justify-between">
         <span className={`material-symbols-outlined ${iconColor} text-[20px] md:text-[24px] group-hover:scale-110 transition-transform`}>{icon}</span>
-        {trend && <span className="text-primary text-[10px] font-black">{trend}</span>}
+        {trend && (
+          <div className="flex flex-col items-end">
+            <span className={`text-[10px] font-black ${trend.isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+              {trend.isPositive ? '↑' : '↓'} {trend.value}%
+            </span>
+            <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">{trend.label}</span>
+          </div>
+        )}
       </div>
       <div className="mt-auto">
         <p className="text-xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">{value}</p>

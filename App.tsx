@@ -19,7 +19,24 @@ import Profile from './pages/Profile';
 import KitchenApprovals from './pages/KitchenApprovals';
 import KitchenApprovalDetail from './pages/KitchenApprovalDetail';
 
+import { useSelector } from 'react-redux';
+import { RootState } from './store';
+import LoginPage from './pages/LoginPage';
+
 const App: React.FC = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  if (!isAuthenticated) {
+    return (
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
+
   return (
     <Router>
       <Layout>
@@ -43,6 +60,7 @@ const App: React.FC = () => {
           <Route path="/approvals/:id" element={<KitchenApprovalDetail />} />
           <Route path="/settings" element={<SystemSettings />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Layout>

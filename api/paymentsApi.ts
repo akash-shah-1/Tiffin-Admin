@@ -1,52 +1,100 @@
-
-import { MOCK_SETTLEMENTS } from '../data/mockData';
+import { graphqlClient } from './graphqlClient';
 import { Settlement } from '../types';
-
-const STORAGE_KEY = 'tiffin_payments_data';
-
-const getStoredSettlements = (): Settlement[] => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_SETTLEMENTS));
-    return MOCK_SETTLEMENTS;
-  }
-  return JSON.parse(stored);
-};
 
 export const paymentsApi = {
   getSettlements: async (): Promise<{ data: Settlement[] }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ data: getStoredSettlements() });
-      }, 700);
-    });
+    const query = `
+      query GetSettlements {
+        settlements {
+          _id
+          kitchenId
+          kitchenName
+          totalOrders
+          totalAmount
+          commissionAmount
+          payoutAmount
+          status
+          dateRange
+          processedAt
+          transactionRef
+        }
+      }
+    `;
+    const data = await graphqlClient(query);
+    const mapped = data.settlements.map((s: any) => ({
+      id: s._id,
+      kitchenId: s.kitchenId,
+      kitchenName: s.kitchenName,
+      totalOrders: s.totalOrders,
+      totalAmount: s.totalAmount,
+      commissionAmount: s.commissionAmount,
+      payoutAmount: s.payoutAmount,
+      status: s.status === 'PENDING' ? 'Pending' : s.status === 'PAID' ? 'Completed' : 'On Hold',
+      dateRange: s.dateRange,
+      processedAt: s.processedAt,
+      transactionRef: s.transactionRef,
+      commissionRate: 15,
+      adjustmentAmount: 0,
+      orders: []
+    }));
+    return { data: mapped };
   },
+
   getSettlementById: async (id: string): Promise<{ data: Settlement | undefined }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const item = getStoredSettlements().find(s => s.id === id);
-        resolve({ data: item });
-      }, 400);
-    });
+    const query = `
+      query GetSettlement($id: ID!) {
+        settlement(id: $id) {
+          _id
+          kitchenId
+          kitchenName
+          totalOrders
+          totalAmount
+          commissionAmount
+          payoutAmount
+          status
+          dateRange
+          processedAt
+          transactionRef
+          bankDetails { accountNo bankName ifsc accountHolder }
+        }
+      }
+    `;
+    const data = await graphqlClient(query, { id });
+    if (!data.settlement) return { data: undefined };
+
+    const s = data.settlement;
+    const mapped: Settlement = {
+      id: s._id,
+      kitchenId: s.kitchenId,
+      kitchenName: s.kitchenName,
+      totalOrders: s.totalOrders,
+      totalAmount: s.totalAmount,
+      commissionAmount: s.commissionAmount,
+      payoutAmount: s.payoutAmount,
+      status: s.status === 'PENDING' ? 'Pending' : s.status === 'PAID' ? 'Completed' : 'On Hold',
+      dateRange: s.dateRange,
+      processedAt: s.processedAt,
+      transactionRef: s.transactionRef,
+      bankDetails: s.bankDetails,
+      commissionRate: 15,
+      adjustmentAmount: 0,
+      orders: []
+    };
+    return { data: mapped };
   },
+
   processSettlement: async (id: string): Promise<{ success: true }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const data = getStoredSettlements();
-        const updated = data.map(s => {
-          if (s.id === id) {
-            return {
-              ...s,
-              status: 'Completed' as const,
-              processedAt: new Date().toLocaleString(),
-              transactionRef: `TXN-${Math.floor(Math.random() * 10000000)}`
-            };
-          }
-          return s;
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        resolve({ success: true });
-      }, 1000);
-    });
+    const mutation = `
+      mutation MarkSettlementPaid($id: ID!, $ref: String!) {
+        markSettlementAsPaid(id: $id, transactionReference: $ref) {
+          _id
+          status
+          transactionRef
+        }
+      }
+    `;
+    const ref = `ADMIN-PAY-${Date.now()}`;
+    await graphqlClient(mutation, { id, ref });
+    return { success: true };
   }
 };

@@ -1,75 +1,118 @@
-
+import { graphqlClient } from './graphqlClient';
 import { KitchenApprovalRequest } from '../types';
-
-const STORAGE_KEY = 'tiffin_kitchen_approvals';
-
-const MOCK_REQUESTS: KitchenApprovalRequest[] = [
-  {
-    id: 'REQ-5501',
-    kitchenName: 'Desi Tadka Junction',
-    ownerName: 'Amit Saxena',
-    phone: '+91 98888 11111',
-    email: 'amit@desi-tadka.com',
-    fssaiNumber: '23321005000789',
-    fssaiDoc: 'https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?w=400',
-    address: 'Plot 42, Sector 18, Gurgaon',
-    identityDoc: 'https://images.unsplash.com/photo-1554224155-1696413565d3?w=400',
-    kitchenPhotos: [
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800',
-      'https://images.unsplash.com/photo-1556910111-a035252ff990?w=800'
-    ],
-    submittedAt: '2024-05-25 11:30 AM',
-    status: 'Pending'
-  },
-  {
-    id: 'REQ-5502',
-    kitchenName: 'Healthy Bites Catering',
-    ownerName: 'Priya Mehra',
-    phone: '+91 91111 22222',
-    email: 'priya@hbites.in',
-    fssaiNumber: '10014011001923',
-    fssaiDoc: 'https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?w=400',
-    address: 'Flat 102, Green Apartments, Noida',
-    identityDoc: 'https://images.unsplash.com/photo-1554224155-1696413565d3?w=400',
-    kitchenPhotos: [
-      'https://images.unsplash.com/photo-1556910602-3884ee022588?w=800'
-    ],
-    submittedAt: '2024-05-24 04:15 PM',
-    status: 'Pending'
-  }
-];
-
-const getStored = (): KitchenApprovalRequest[] => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_REQUESTS));
-    return MOCK_REQUESTS;
-  }
-  return JSON.parse(stored);
-};
 
 export const kitchenApprovalsApi = {
   getRequests: async (): Promise<{ data: KitchenApprovalRequest[] }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ data: getStored() }), 800);
-    });
+    // In our backend, PENDING kitchens are the requests
+    const query = `
+      query GetPendingKitchens {
+        kitchens(status: PENDING) {
+          _id
+          name
+          ownerName
+          phone
+          email
+          address
+          fssai
+          fssaiDoc
+          identityDoc
+          kitchenPhotos
+          createdAt
+          status
+        }
+      }
+    `;
+    const data = await graphqlClient(query);
+    const mapped = data.kitchens.map((k: any) => ({
+      id: k._id,
+      kitchenName: k.name,
+      ownerName: k.ownerName,
+      phone: k.phone,
+      email: k.email,
+      address: k.address,
+      fssaiNumber: k.fssai,
+      fssaiDoc: k.fssaiDoc,
+      identityDoc: k.identityDoc,
+      kitchenPhotos: k.kitchenPhotos,
+      submittedAt: new Date(k.createdAt).toLocaleString(),
+      status: k.status === 'PENDING' ? 'Pending' : k.status === 'REJECTED' ? 'Rejected' : k.status === 'CHANGES_REQUESTED' ? 'Changes Requested' : 'Approved'
+    }));
+    return { data: mapped };
   },
+
   getRequestById: async (id: string): Promise<{ data: KitchenApprovalRequest | undefined }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const item = getStored().find(r => r.id === id);
-        resolve({ data: item });
-      }, 500);
-    });
+    const query = `
+      query GetKitchenRequest($id: ID!) {
+        kitchen(id: $id) {
+          _id
+          name
+          ownerName
+          phone
+          email
+          address
+          fssai
+          fssaiDoc
+          identityDoc
+          kitchenPhotos
+          createdAt
+          status
+        }
+      }
+    `;
+    const data = await graphqlClient(query, { id });
+    if (!data.kitchen) return { data: undefined };
+
+    const k = data.kitchen;
+    const mapped: KitchenApprovalRequest = {
+      id: k._id,
+      kitchenName: k.name,
+      ownerName: k.ownerName,
+      phone: k.phone,
+      email: k.email,
+      address: k.address,
+      fssaiNumber: k.fssai,
+      fssaiDoc: k.fssaiDoc,
+      identityDoc: k.identityDoc,
+      kitchenPhotos: k.kitchenPhotos,
+      submittedAt: new Date(k.createdAt).toLocaleString(),
+      status: k.status === 'PENDING' ? 'Pending' : k.status === 'REJECTED' ? 'Rejected' : k.status === 'CHANGES_REQUESTED' ? 'Changes Requested' : 'Approved'
+    };
+    return { data: mapped };
   },
-  updateStatus: async (id: string, status: KitchenApprovalRequest['status'], feedback?: any): Promise<{ success: true }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const items = getStored();
-        const updated = items.map(item => item.id === id ? { ...item, status, feedback } : item);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        resolve({ success: true });
-      }, 600);
-    });
+
+  updateStatus: async (id: string, status: string, feedback?: any): Promise<{ success: true }> => {
+    let mutation = '';
+    let variables: any = { id };
+
+    if (status === 'Approved') {
+      mutation = `
+        mutation ApproveKitchen($id: ID!) {
+          approveKitchen(id: $id) { _id status }
+        }
+      `;
+    } else if (status === 'Rejected') {
+      mutation = `
+        mutation RejectKitchen($id: ID!, $reason: String!) {
+          rejectKitchen(id: $id, reason: $reason) { _id status }
+        }
+      `;
+      variables.reason = feedback?.comments || 'Does not meet platform requirements';
+    } else if (status === 'Changes Requested') {
+      mutation = `
+        mutation RequestChanges($id: ID!, $feedback: KitchenFeedbackInput!) {
+          requestChanges(id: $id, feedback: $feedback) { _id status }
+        }
+      `;
+      variables.feedback = {
+        reasons: feedback?.reasons || ['Incomplete documentation'],
+        comments: feedback?.comments || 'Please update documents'
+      };
+    }
+
+    if (mutation) {
+      await graphqlClient(mutation, variables);
+    }
+
+    return { success: true };
   }
 };

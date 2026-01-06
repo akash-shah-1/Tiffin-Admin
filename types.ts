@@ -52,6 +52,7 @@ export interface OrderTimeline {
 
 export interface Order {
   id: string;
+  orderNumber?: string;
   customerName: string;
   customerId: string;
   customerPhone: string;

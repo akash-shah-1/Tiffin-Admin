@@ -6,7 +6,9 @@ interface DashboardState {
   metrics: any | null;
   quickStats: any | null;
   revenueData: any[];
-  volumeData: any[];
+  monthlyRevenue: any[];
+  orderStatusDistribution: any[];
+  categoryDistribution: any[];
   activity: any[];
   loading: boolean;
   error: string | null;
@@ -16,7 +18,9 @@ const initialState: DashboardState = {
   metrics: null,
   quickStats: null,
   revenueData: [],
-  volumeData: [],
+  monthlyRevenue: [],
+  orderStatusDistribution: [],
+  categoryDistribution: [],
   activity: [],
   loading: false,
   error: null,
@@ -44,7 +48,9 @@ const dashboardSlice = createSlice({
         state.metrics = action.payload.metrics;
         state.quickStats = action.payload.quickStats;
         state.revenueData = action.payload.revenueData;
-        state.volumeData = action.payload.volumeData;
+        state.monthlyRevenue = action.payload.monthlyRevenue;
+        state.orderStatusDistribution = action.payload.orderStatusDistribution;
+        state.categoryDistribution = action.payload.categoryDistribution;
         state.activity = action.payload.activity;
       })
       .addCase(fetchDashboardData.rejected, (state, action) => {

@@ -9,6 +9,7 @@ import complaintsReducer from './slices/complaintsSlice';
 import reportsReducer from './slices/reportsSlice';
 import kitchenApprovalsReducer from './slices/kitchenApprovalsSlice';
 import ordersReducer from './slices/ordersSlice';
+import authReducer from './slices/authSlice';
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     reports: reportsReducer,
     kitchenApprovals: kitchenApprovalsReducer,
     orders: ordersReducer,
+    auth: authReducer,
   },
 });
 

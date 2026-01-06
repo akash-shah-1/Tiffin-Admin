@@ -6,7 +6,17 @@ import { fetchDashboardData } from '../store/slices/dashboardSlice';
 
 export const useDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { metrics, quickStats, revenueData, volumeData, activity, loading, error } = useSelector(
+  const {
+    metrics,
+    quickStats,
+    revenueData,
+    monthlyRevenue,
+    orderStatusDistribution,
+    categoryDistribution,
+    activity,
+    loading,
+    error
+  } = useSelector(
     (state: RootState) => state.dashboard
   );
 
@@ -20,5 +30,16 @@ export const useDashboard = () => {
     dispatch(fetchDashboardData());
   }, [dispatch]);
 
-  return { metrics, quickStats, revenueData, volumeData, activity, loading, error, refreshData };
+  return {
+    metrics,
+    quickStats,
+    revenueData,
+    monthlyRevenue,
+    orderStatusDistribution,
+    categoryDistribution,
+    activity,
+    loading,
+    error,
+    refreshData
+  };
 };

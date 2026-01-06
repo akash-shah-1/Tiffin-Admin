@@ -1,35 +1,49 @@
-
-import { MOCK_PLANS } from '../data/mockData';
-
-const STORAGE_KEY = 'tiffin_approvals_data';
-
-const getStoredPlans = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_PLANS));
-    return MOCK_PLANS;
-  }
-  return JSON.parse(stored);
-};
+import { graphqlClient } from './graphqlClient';
 
 export const approvalsApi = {
   getPlans: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ data: getStoredPlans() });
-      }, 600);
-    });
+    // In our backend, we can filter plans by status PENDING
+    const query = `
+      query GetPendingPlans {
+        plans(status: PENDING) {
+          _id
+          name
+          description
+          kitchenId
+          price
+          duration
+          mealType
+          status
+          image
+        }
+      }
+    `;
+    const data = await graphqlClient(query);
+    const mapped = data.plans.map((p: any) => ({
+      ...p,
+      id: p._id,
+      status: 'Pending' // Standardizing for frontend
+    }));
+    return { data: mapped };
   },
-  updatePlanStatus: async (id: string, status: 'Approved' | 'Rejected') => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const plans = getStoredPlans();
-        const updatedPlans = plans.map((p: any) => 
-          p.id === id ? { ...p, status } : p
-        );
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPlans));
-        resolve({ success: true, id, status });
-      }, 500);
-    });
+
+  updatePlanStatus: async (id: string, status: 'Approved' | 'Rejected', feedback?: string) => {
+    let mutation = '';
+    if (status === 'Approved') {
+      mutation = `
+        mutation ApprovePlan($id: ID!) {
+          approvePlan(id: $id) { _id status }
+        }
+      `;
+    } else {
+      mutation = `
+        mutation RejectPlan($id: ID!, $reason: String!) {
+          rejectPlan(id: $id, reason: $reason) { _id status }
+        }
+      `;
+    }
+
+    await graphqlClient(mutation, { id, reason: feedback || 'Does not meet standards' });
+    return { success: true, id, status };
   }
 };
