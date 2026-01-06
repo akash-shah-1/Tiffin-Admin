@@ -4,7 +4,7 @@ import { ReportStats } from '../types';
 export const reportsApi = {
   getDailyReport: async (date: string): Promise<{ data: ReportStats }> => {
     const query = `
-      query GetDailyReport($date: String!) {
+      query GetDailyReport {
         platformSummarySnapshot(range: "DAILY") {
           totalOrders
           totalGMV
@@ -13,7 +13,7 @@ export const reportsApi = {
         }
       }
     `;
-    const data = await graphqlClient(query, { date });
+    const data = await graphqlClient(query);
     const s = data.platformSummarySnapshot;
 
     return {

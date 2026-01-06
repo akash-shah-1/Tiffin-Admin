@@ -16,7 +16,7 @@ export const kitchenApprovalsApi = {
           fssai
           fssaiDoc
           identityDoc
-          kitchenPhotos
+          photos
           createdAt
           status
         }
@@ -33,7 +33,7 @@ export const kitchenApprovalsApi = {
       fssaiNumber: k.fssai,
       fssaiDoc: k.fssaiDoc,
       identityDoc: k.identityDoc,
-      kitchenPhotos: k.kitchenPhotos,
+      kitchenPhotos: k.photos,
       submittedAt: new Date(k.createdAt).toLocaleString(),
       status: k.status === 'PENDING' ? 'Pending' : k.status === 'REJECTED' ? 'Rejected' : k.status === 'CHANGES_REQUESTED' ? 'Changes Requested' : 'Approved'
     }));
@@ -53,7 +53,7 @@ export const kitchenApprovalsApi = {
           fssai
           fssaiDoc
           identityDoc
-          kitchenPhotos
+          photos
           createdAt
           status
         }
@@ -73,7 +73,7 @@ export const kitchenApprovalsApi = {
       fssaiNumber: k.fssai,
       fssaiDoc: k.fssaiDoc,
       identityDoc: k.identityDoc,
-      kitchenPhotos: k.kitchenPhotos,
+      kitchenPhotos: k.photos,
       submittedAt: new Date(k.createdAt).toLocaleString(),
       status: k.status === 'PENDING' ? 'Pending' : k.status === 'REJECTED' ? 'Rejected' : k.status === 'CHANGES_REQUESTED' ? 'Changes Requested' : 'Approved'
     };
